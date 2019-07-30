@@ -4,33 +4,13 @@ VERSION = (env.BRANCH_NAME != 'develop') ? "${env.BRANCH_NAME}-${MAJOR_VERSION}.
 
 node ('build') {
     try {
-        
         def build_image = docker.build("api:latest", "-f ./api/Dockerfile .")
         build_image.push()
-        
-
-        sh "docker rmi '${PROJECT_NAME}-build'"
-
-        stage('Notification and Cleanup') {
-            createGitTag()
-            getDockerRunCommand(MODULES)
-            deleteDir()
-        }
+    
     } catch(error) {
         deleteDir()
         throw error
     }
-}
-
-def fullImageName(moduleName) {
-    return "${DOCKER_REGISTRY}/${PROJECT_NAME}-${moduleName}:${VERSION}"
-}
-
-def buildAndPushImage(moduleName) {
-    def run_image = docker.build("${fullImageName(moduleName)}", "-f Dockerfile.run --build-arg MODULE_NAME=${moduleName} .")
-
-    run_image.push()
-    sh "docker rmi '${fullImageName(moduleName)}'"
 }
 
 def createGitTag() {
