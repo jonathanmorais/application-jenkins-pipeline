@@ -1,0 +1,45 @@
+version: '3.5'
+services:
+  web:
+    container_name: web-tier
+    build:
+      context: ./web
+    image: jonathan99/web:1.0
+    restart: always  
+    ports:
+      - "8090:8090"
+    environment:
+      API_HOST: http://api:9090
+      PORT_WEB: 8090
+
+  api:
+    container_name: api-tier
+    build:
+      context: ./api
+    image: jonathan99/api:1.0
+    restart: always  
+    ports:
+      - "9090:9090"
+    environment:
+      PORT: 9090
+      API_PORT: 9090
+      DB: postgres://admin:admin@db:5432/challenge
+    depends_on:
+      - db
+    links:
+      - db
+
+  db:
+    container_name: database-tier
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: challenge
+      POSTGRES_USER: user01
+      POSTGRES_PASSWORD: user01@2019
+      POSTGRES_PORT: 5432
+      PORT: 5432
+    volumes:
+       - /database/postgres/data:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
